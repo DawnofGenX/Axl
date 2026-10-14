@@ -54,6 +54,45 @@ test("Vim mode edits through the standard grapheme-safe editor", () => {
   assert.equal(editor.render(40).cursorColumn, 3);
 });
 
+test("Vim mode change commands cw and cc delete then enter insert mode", () => {
+  const editor = new LineEditor();
+  const vim = new VimModeController();
+  editor.setText("one two");
+
+  assert.equal(vim.handle({ kind: "escape" }, editor), true);
+  vim.handle({ kind: "char", char: "0" }, editor);
+  vim.handle({ kind: "char", char: "c" }, editor);
+  vim.handle({ kind: "char", char: "w" }, editor);
+  assert.equal(editor.text, "two");
+  assert.equal(vim.mode, "insert");
+});
+
+test("Vim mode cc clears the current line but keeps it", () => {
+  const editor = new LineEditor();
+  const vim = new VimModeController();
+  editor.setText("hello\nworld");
+
+  assert.equal(vim.handle({ kind: "escape" }, editor), true);
+  vim.handle({ kind: "char", char: "k" }, editor);
+  vim.handle({ kind: "char", char: "0" }, editor);
+  vim.handle({ kind: "char", char: "c" }, editor);
+  vim.handle({ kind: "char", char: "c" }, editor);
+  assert.equal(editor.text, "\nworld");
+  assert.equal(vim.mode, "insert");
+});
+
+test("Vim mode c followed by another key cancels without editing", () => {
+  const editor = new LineEditor();
+  const vim = new VimModeController();
+  editor.setText("abc");
+
+  assert.equal(vim.handle({ kind: "escape" }, editor), true);
+  vim.handle({ kind: "char", char: "c" }, editor);
+  vim.handle({ kind: "char", char: "x" }, editor);
+  assert.equal(editor.text, "abc");
+  assert.equal(vim.mode, "normal");
+});
+
 test("vertical movement preserves the preferred visual column", () => {
   const editor = new LineEditor();
   editor.setText("abcdef\nx\nabcdef");

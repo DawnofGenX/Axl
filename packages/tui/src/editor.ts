@@ -327,6 +327,13 @@ export class LineEditor {
     else this.kill(0, lineEnd);
   }
 
+  /** Remove the current line's text, keep the line itself, and put the cursor at its start. */
+  clearCurrentLine(): void {
+    const { lineStart, lineEnd } = this.position();
+    if (lineStart === lineEnd) return;
+    this.kill(lineStart, lineEnd);
+  }
+
   openLine(direction: "above" | "below"): void {
     const { lineStart, lineEnd } = this.position();
     this.snapshot();
